@@ -21,6 +21,18 @@ from .chronocongruence import (
     cylindrical_congruence,
     spherical_congruence,
 )
+from .envelope import (
+    TriangleGeometry,
+    L0_of_R,
+    Lk_of_R,
+    L_of_R,
+    P_of_R,
+    Q_of_R,
+    R_of_P,
+    rounded_triangle_boundary,
+    boundary_length_numeric,
+    verify_envelope_length,
+)
 
 __all__ = [
     "Mesh",
@@ -42,4 +54,14 @@ __all__ = [
     "flat_parallel_congruence",
     "cylindrical_congruence",
     "spherical_congruence",
+    "TriangleGeometry",
+    "L0_of_R",
+    "Lk_of_R",
+    "L_of_R",
+    "P_of_R",
+    "Q_of_R",
+    "R_of_P",
+    "rounded_triangle_boundary",
+    "boundary_length_numeric",
+    "verify_envelope_length",
 ]

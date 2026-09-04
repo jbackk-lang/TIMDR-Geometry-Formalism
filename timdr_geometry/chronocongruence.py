@@ -3,7 +3,9 @@ timdr_geometry/chronocongruence.py
 
 Kongruencja trajektorii Gamma(t,s) i operator ksztaltu dla chronoprocesu
 -- numeryczna konstrukcja dla galezi G z Chronoprocesu
-Xi=(T,x,Gamma,phi) opisanego w GIA-TIMDR/SKILL_timdr-signal-framework.md
+Xi=(T,x,Gamma,phi), pelny opis: GIA-TIMDR/docs/theory/
+TIMDR_Chronoprocess.md (sekcja 3); skrot: GIA-TIMDR/SKILL_timdr-signal-
+framework.md (sekcja 5)
 ("naprawa G": pojedyncza trajektoria jest krzywa 1D i nie ma operatora
 ksztaltu; potrzeba RODZINY trajektorii {gamma_s}_{s in I},
 Gamma(t,s)=gamma_s(t), zeby obraz S=Gamma(TxI) byl prawdziwa
@@ -35,12 +37,11 @@ przyklady ponizej sa KONKRETNYMI wyborami ilustrujacymi konstrukcje
 ze to JEDYNY albo "poprawny" wybor I dla jakiegokolwiek realnego
 zastosowania domenowego.
 
-UWAGA O WYKONANIU: napisane w sesji bez dostepu do sandboxa bash --
-oczekiwane krzywizny ponizej sa PRZEPISANE z juz ustalonych,
-przetestowanych faktow analitycznych dla sfery/walca w weingarten.py
-(nie nowa derywacja), ale ten konkretny plik + tests/test_chronocongruence.py
-NIE zostaly jeszcze uruchomione. Uruchom
-`pytest tests/test_chronocongruence.py -v` przed zaufaniem tym liczbom.
+UWAGA O WYKONANIU: napisane w sesji bez dostepu do sandboxa bash,
+odtad faktycznie uruchomione przez uzytkownika (`pytest tests/ -v`) i
+ZWERYFIKOWANE -- 17/17 testow w calym repo przeszlo, w tym oba typu
+testow tests/test_chronocongruence.py (rownowaznosc z
+make_plane/cylinder/sphere_mesh i bezposrednia krzywizna).
 """
 from __future__ import annotations
 
