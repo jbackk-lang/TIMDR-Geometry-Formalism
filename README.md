@@ -82,6 +82,64 @@ została prześledzona ręcznie krok po kroku, a tolerancje w testach są
 celowo szerokie, ale to nie zastępuje faktycznego `pytest tests/ -v`.
 Uruchom testy przed zaufaniem tym liczbom.
 
+## 🌀 Kongruencja Γ(t,s) dla chronoprocesu — `timdr_geometry.chronocongruence`
+
+Odpowiedź na wcześniej otwarty błąd obiektu: pojedyncza trajektoria
+"czasu" jest krzywą 1D i nie ma operatora kształtu. Potrzeba rodziny
+trajektorii `{γ_s}_{s∈I}`, `Γ(t,s)=γ_s(t)`, tak żeby obraz
+`S=Γ(T×I)⊂ℝ³` był prawdziwą powierzchnią 2D — wtedy `n(p)`, `S_p`,
+`T_S(p)` z tego repo działają dosłownie, bez metafory. Patrz
+`GIA-TIMDR/SKILL_timdr-signal-framework.md` za pełne uzasadnienie tej
+konstrukcji (Chronoproces `Ξ=(T,x,Γ,φ)`).
+
+`make_congruence_mesh(gamma, t_values, s_values, t_periodic, s_periodic)`
+buduje siatkę z DOWOLNEJ funkcji `gamma(t,s)→(x,y,z)` — generalizacja
+wzorca już użytego w `make_plane_mesh`/`make_sphere_mesh`/
+`make_cylinder_mesh` (te trzy NIE zostały przepisane na to wywołanie,
+ale są jego szczególnymi przypadkami — sprawdzone testem równoważności
+w `tests/test_chronocongruence.py`, dającym identyczne wierzchołki i
+trójkąty).
+
+Trzy kanoniczne kongruencje o znanej analitycznie krzywiźnie:
+
+| Kongruencja | Sens | Krzywizna wzdłuż t | Krzywizna wzdłuż s |
+|---|---|---|---|
+| `flat_parallel_congruence` | trajektorie równoległe, bez zbiegania/rozbiegania | 0 | 0 |
+| `cylindrical_congruence` | trajektorie ułożone po okręgu, biegnące wzdłuż wspólnej osi | ≈0 (osiowo) | ≈1/r (obwodowo) |
+| `spherical_congruence` | trajektorie zbiegające się symetrycznie ku "biegunom" | ≈1/R | ≈1/R (izotropowo) |
+
+```python
+from timdr_geometry import make_congruence_mesh, cylindrical_congruence, vertex_normals, discrete_shape_operator, one_ring
+
+zs = [0.0, 1.0, 2.0, 3.0]
+thetas = [i * (2 * 3.14159265 / 12) for i in range(12)]
+mesh = make_congruence_mesh(
+    lambda t, s: cylindrical_congruence(t, s, radius=1.5),
+    t_values=zs, s_values=thetas, t_periodic=False, s_periodic=True,
+)
+normals = vertex_normals(mesh)
+rings = one_ring(mesh)
+op = discrete_shape_operator(mesh, normals, point_idx=13, rings=rings)
+print(op.principal_curvatures)  # oczekiwane co do WARTOSCI BEZWZGLEDNEJ: jedna ~0 (osiowo), druga ~0.667=1/1.5 (obwodowo) — konkretny znak/kolejnosc zaleza od konwencji S_p=-D_v n, patrz uwaga na gorze weingarten.py
+```
+
+**⚠️ Granica zakresu, jawnie.** Ten moduł mierzy krzywiznę ZEWNĘTRZNĄ
+(Weingarten/T_S) powierzchni zamiecionej przez `Γ(t,s)`. NIE
+implementuje rozkładu ekspansja/ścinanie/skręt (θ/σ/ω) kongruencji
+geodezyjnych z równania Raychaudhuriego (OTW) — to była wskazana
+ANALOGIA uzasadniająca, że `T_S` na takiej powierzchni jest sensownym
+obiektem geometrycznym, nie twierdzenie o równoważności z którąś z
+tamtych trzech wielkości. Domena `I` (co dokładnie parametryzuje
+"sąsiednie" trajektorie) pozostaje decyzją modelową — trzy przykłady
+powyżej to konkretne ilustracje, nie jedyny "poprawny" wybór.
+
+**⚠️ Nie uruchomione w tej sesji.** `chronocongruence.py` i
+`tests/test_chronocongruence.py` napisane bez dostępu do sandboxa bash
+— oczekiwane krzywizny są przepisane z już ustalonych faktów
+analitycznych dla sfery/walca (nie nowa derywacja), ale nie zostały
+faktycznie policzone przez `pytest` w tej sesji. Uruchom
+`pytest tests/test_chronocongruence.py -v`.
+
 ## ⚠️ Czego to NIE robi (status wg Aksjomatu G7)
 
 Ten moduł domyka **numerycznie** to, co Aksjomaty G8-G9 domknęły
