@@ -15,6 +15,12 @@ from .weingarten import (
     make_sphere_mesh,
     make_cylinder_mesh,
 )
+from .chronocongruence import (
+    make_congruence_mesh,
+    flat_parallel_congruence,
+    cylindrical_congruence,
+    spherical_congruence,
+)
 
 __all__ = [
     "Mesh",
@@ -32,4 +38,8 @@ __all__ = [
     "make_plane_mesh",
     "make_sphere_mesh",
     "make_cylinder_mesh",
+    "make_congruence_mesh",
+    "flat_parallel_congruence",
+    "cylindrical_congruence",
+    "spherical_congruence",
 ]
