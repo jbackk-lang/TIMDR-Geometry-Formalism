@@ -10,6 +10,10 @@ Analogiczny cel jak `TIMDR-Math-Formalism` dla gałęzi sygnałowej: teoria
 żyje w GIA-TIMDR, tu żyje działający, testowalny kod, który ją
 implementuje — nie osobna, konkurencyjna definicja.
 
+![Potok algorytmu: siatka 3D → normalne wierzchołkowe → rzut na styczną → dopasowanie MNK → wartości własne, rozgałęziające się na T_S empiryczny i T_S przewidywany, porównywane na końcu](docs/diagram_pipeline.svg)
+
+![Trzy powierzchnie testowe: płaszczyzna z równoległymi normalnymi (κ≈0), sfera z normalnymi rozchodzącymi się promieniście (κ≈1/R), walec z krzywizną zero wzdłuż osi i 1/r obwodowo](docs/diagram_surfaces.svg)
+
 ## Co to liczy
 
 Dla wierzchołka `p` trójkątnej siatki `S⊂ℝ³`:
