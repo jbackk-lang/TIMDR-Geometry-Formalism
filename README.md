@@ -76,11 +76,8 @@ G7c — na przypadkach znanych analitycznie:
 | `TestCylinder` | walec promienia r | jedna krzywizna `≈0` (oś), druga `≈1/r` (obwód) |
 | `TestMeshRefinement` | sfera, rosnąca rozdzielczość | błąd krzywizny i błąd `T_S_predicted` vs `T_S_empirical` maleją przy zagęszczaniu siatki |
 
-**⚠️ Nie uruchomione w tej sesji.** Sandbox bash był niedostępny
-(RPC pipe closed) przez cały czas pisania tego modułu — matematyka
-została prześledzona ręcznie krok po kroku, a tolerancje w testach są
-celowo szerokie, ale to nie zastępuje faktycznego `pytest tests/ -v`.
-Uruchom testy przed zaufaniem tym liczbom.
+**✅ Zweryfikowane.** `pytest tests/ -v` — 17/17 testów przeszło
+(w tym te cztery testy stabilności Weingartena).
 
 ## 🌀 Kongruencja Γ(t,s) dla chronoprocesu — `timdr_geometry.chronocongruence`
 
@@ -133,12 +130,58 @@ tamtych trzech wielkości. Domena `I` (co dokładnie parametryzuje
 "sąsiednie" trajektorie) pozostaje decyzją modelową — trzy przykłady
 powyżej to konkretne ilustracje, nie jedyny "poprawny" wybór.
 
-**⚠️ Nie uruchomione w tej sesji.** `chronocongruence.py` i
-`tests/test_chronocongruence.py` napisane bez dostępu do sandboxa bash
-— oczekiwane krzywizny są przepisane z już ustalonych faktów
-analitycznych dla sfery/walca (nie nowa derywacja), ale nie zostały
-faktycznie policzone przez `pytest` w tej sesji. Uruchom
-`pytest tests/test_chronocongruence.py -v`.
+**✅ Zweryfikowane.** `pytest tests/ -v` — 17/17 testów przeszło,
+w tym oba typu testów `test_chronocongruence.py` (równoważność z
+`make_plane/cylinder/sphere_mesh` i bezpośrednia krzywizna).
+
+## 📐 Obwiednia zaokrąglona ∂_R(Δ) i parametr (P,Q) — `timdr_geometry.envelope`
+
+Numeryczna implementacja Aksjomatu G10 (`Axioms_G_TIMDR_Geometry.md`) —
+inny obiekt niż G8-G9: krzywizna **krzywej** (obwiedni trójkąta), nie
+**powierzchni**. `P=L0/L`, `Q=Lk/L=1-P` — udział prostoliniowej vs
+łukowej części obwiedni zaokrąglonego trójkąta, jako funkcja promienia
+zaokrąglenia `R`.
+
+**Poprawka błędu znalezionego w tej samej sesji.** Pierwsza wersja
+Aksjomatu G10e twierdziła, że złamanie symetrii trójkąta ściśle
+ogranicza zasięg `Q` (tylko trójkąt równoboczny miał osiągać `Q=1`).
+To było matematycznie fałszywe — wyszło na jaw przy liczeniu
+konkretnego przykładu liczbowego (nie przy przeglądzie aksjomatu).
+Poprawiona wersja: `R_max(Δ)=r_in(Δ)` **dokładnie dla każdego
+trójkąta** (standardowa tożsamość stycznej-do-okręgu-wpisanego), więc
+`Q=1` jest osiągalne zawsze. `tests/test_envelope.py` weryfikuje to
+numerycznie na 5 trójkątach (ostry, prostokątny, rozwarty, prawie
+zdegenerowany, równoboczny), licząc `R_max` i `r_in` DWIEMA
+NIEZALEŻNYMI ścieżkami (suma kotangensów połówek kątów vs wzór Herona),
+żeby test nie był kołowy.
+
+```python
+from timdr_geometry import TriangleGeometry, P_of_R, Q_of_R, R_of_P, verify_envelope_length
+
+tri = TriangleGeometry.from_sides(3.0, 4.0, 5.0)   # jawnie asymetryczny
+print(tri.R_max(), tri.r_in)          # 1.0, 1.0 — równe, poprawka G10e
+print(P_of_R(tri, 0.4), Q_of_R(tri, 0.4))   # (0.7412, 0.2588)
+print(R_of_P(tri, 0.5))               # "i odwrotnie" (G10d): zadany P -> R
+
+# niezależna weryfikacja numeryczna: skonstruowana polilinia vs wzór zamknięty
+result = verify_envelope_length([0,0], [4,0], [0,3], R=0.5, n_arc=300)
+print(result["relative_error"])       # << 1
+```
+
+**Co jest sprawdzone testami (`tests/test_envelope.py`):** `R_max(Δ)=r_in(Δ)`
+i `c(Δ)=s/r_in(Δ)` na 5 trójkątach; `L0(R_max)=0` i `Q(R_max)=1` dla
+każdego z nich (poprawka G10e); nierówność Jensena `c(Δ)≥3√3` z
+równością tylko dla równobocznego (G10d); ścisła monotoniczność `P(R)`
+i odwracalność `R_of_P(P_of_R(R))=R` (G10d, "i odwrotnie"); niezależna
+zgodność skonstruowanej obwiedni (odcinki+łuki, próbkowane numerycznie)
+z zamkniętym wzorem `L(R)` (ten sam duch co `T_S_empirical` vs
+`T_S_predicted` w `weingarten.py`); przypadki błędne (`R>R_max`,
+zdegenerowany trójkąt, punkty 3D podane do konstrukcji płaskiej).
+
+**✅ Zweryfikowane.** `pytest tests/test_envelope.py -v` — **65/65
+testów przeszło** (poprawka G10e na 5 trójkątach, monotoniczność i
+odwracalność P(R), niezależna weryfikacja skonstruowanej geometrii
+przeciwko wzorowi zamkniętemu, przypadki błędne).
 
 ## ⚠️ Czego to NIE robi (status wg Aksjomatu G7)
 
