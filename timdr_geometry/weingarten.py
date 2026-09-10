@@ -61,6 +61,8 @@ __all__ = [
     "make_plane_mesh",
     "make_sphere_mesh",
     "make_cylinder_mesh",
+    "CurvatureDispersionResult",
+    "mean_curvature_dispersion",
 ]
 
 
@@ -315,6 +317,119 @@ def T_S_predicted(op: ShapeOperatorResult, delta_p: np.ndarray) -> float:
         return 0.0
     direction = delta_p / norm_dp
     return norm_dp * float(np.linalg.norm(op.apply(direction)))
+
+
+# ---------------------------------------------------------------------
+# Lambda_G: dyspersja krzywizny (DODANE 2026-09-10)
+# ---------------------------------------------------------------------
+#
+# PRE-REJESTRACJA (przed jakimkolwiek uruchomieniem na danych/testach
+# ponizej - zamrozone TUTAJ, w tym miejscu, zanim wynik czegokolwiek
+# zostal zobaczony):
+#
+# Kontekst: propozycja uzytkownika, zeby Lambda/tau/rho/J z galezi
+# META-DYNAMICS traktowac jako RODZINE sygnalow (jeden ksztalt pytania
+# - "jak bardzo uklad jest rozproszony/nieuporzadkowany" dla Lambda -
+# realizowany OSOBNYM wzorem w kazdej galezi), analogicznie do tego, jak
+# ten sam modul juz potraktowal krzywizne jako rodzine operatorow
+# (Weingarten/obwiednia/torsja). Audyt PRZED napisaniem kodu (patrz
+# `TIMDR_Branch_Specification.md`, `Axioms_G_TIMDR_Geometry.md`) pokazal,
+# ze gałąź G NIE MA dzis zadnego operatora dyspersji - to jest NOWY
+# operator, nie odkrycie istniejacego.
+#
+# ODRZUCONY pierwszy pomysl (uczciwie odnotowany, nie ukryty): "parametr
+# porzadku" pola KIERUNKOW GLOWNYCH krzywizny (analogia nematyczna do
+# circular_dispersion() w Quantum-Lattice, exp(2i*theta) bo kierunek ma
+# okresowosc pi nie 2pi). ODRZUCONE bo principal_directions_2d() zyje w
+# LOKALNEJ bazie stycznej (e1,e2) KAZDEGO wierzcholka osobno - w
+# przeciwienstwie do fazy na plaskiej siatce Quantum-Lattice (jeden
+# globalny uklad wspolrzednych dla wszystkich komorek), nie ma tu
+# jednego globalnego kata do usredniania bez transportu rownoleglego
+# (wlasciwe rozwiazanie geometryczne, ale osobny, niezrobiony tu projekt
+# - wymagalby wyboru koneksji/drzewa rozpinajacego i obsluzenia
+# holonomii). Wymuszenie usredniania katow z roznych przestrzeni
+# stycznych bez transportu bylby dokladnie tym bledem "podobienstwo
+# slowne zamiast wspolny obiekt matematyczny", przed ktorym ten caly
+# ekosystem sie broni.
+#
+# PRZYJETA DEFINICJA (wymaga tylko juz-istniejacych, dobrze
+# zdefiniowanych SKALARNYCH wielkosci - srednia krzywizna H(p), zaden
+# problem bazy/koneksji):
+#
+#   Lambda_G(mesh) = std(H) / (std(H) + |mean(H)| + eps)
+#
+# gdzie H(p) = mean_curvature() na kazdym wierzcholku z pelnym 1-ringiem
+# (brzegi/bieguny pomijane, tak jak w testach istniejacych w tym module).
+# Transformacja std/(std+|mean|+eps) normalizuje wspolczynnik zmiennosci
+# do [0,1): 0 = krzywizna stala wszedzie (idealny porzadek - sfera,
+# plaszczyzna, walec), ->1 = silnie niejednorodna krzywizna (nieporzadek)
+# - ta sama INTERPRETACJA co Lambda w META-DYNAMICS (0=porzadek/kolaps,
+# ~1=rozrzucone), ale INNY wzor (zwykla dyspersja skalara, nie parametr
+# porzadku zespolony) - bo krzywizna srednia NIE jest wielkoscia
+# katowa/okresowa jak faza. eps=1e-9 zapobiega 0/0 dla idealnie plaskiej
+# siatki (H=0 wszedzie -> std=0, mean=0).
+#
+# PRZEDREJESTROWANE KONTROLE (przed uruchomieniem):
+#   + pozytywna (niski Lambda_G, ~0): sfera i walec (krzywizna stala w
+#     czesci wewnetrznej siatki, pomijajac brzegi/bieguny) - JUZ znane z
+#     testow w tym module jako analitycznie stale.
+#   - negatywna (wyzszy Lambda_G): siatka plaszczyzny z losowym szumem
+#     z-wysokosci na wierzcholkach (niejednorodna krzywizna z
+#     konstrukcji) - PRZED uruchomieniem oczekuje sie Lambda_G
+#     WYRAZNIE > Lambda_G(sfera/walec), konkretny prog NIE ustalony z
+#     gory (protokol #7 - unikaj numerologii, sprawdz WZGLEDNY porzadek,
+#     nie sztywna liczbe).
+
+
+@dataclass
+class CurvatureDispersionResult:
+    """Wynik Lambda_G - patrz PRE-REJESTRACJA powyzej."""
+
+    lambda_g: float
+    mean_H: float
+    std_H: float
+    n_valid: int  # liczba wierzcholkow z pelnym 1-ringiem, faktycznie uzytych
+
+
+def mean_curvature_dispersion(mesh: Mesh, eps: float = 1e-9) -> CurvatureDispersionResult:
+    """Lambda_G(mesh) - dyspersja sredniej krzywizny po calej siatce,
+    patrz PRE-REJESTRACJA powyzej za pelne uzasadnienie wzoru i
+    odrzucony alternatywny pomysl (parametr porzadku kierunkow
+    glownych).
+
+    Wierzcholki z <2 sasiadami (brzeg/izolowane) sa POMIJANE (nie da
+    sie dla nich policzyc dyskretnego operatora ksztaltu w ogole -
+    `discrete_shape_operator` rzucilby ValueError) - to jest ta sama
+    konwencja, co testy w tym module juz stosuja dla brzegow/biegunow
+    siatek walca/sfery."""
+    normals = vertex_normals(mesh)
+    rings = one_ring(mesh)
+    H_values = []
+    for idx in range(mesh.n_vertices):
+        if len(rings[idx]) < 2:
+            continue
+        if np.linalg.norm(normals[idx]) == 0:
+            continue
+        try:
+            op = discrete_shape_operator(mesh, normals, idx, rings=rings)
+        except ValueError:
+            # zdegenerowany 1-ring (rzad<2, itp.) - pomin ten wierzcholek,
+            # ta sama logika co gdzie indziej w tym module: pomin, nie
+            # udawaj wartosc zerowa.
+            continue
+        H_values.append(mean_curvature(op))
+
+    if len(H_values) == 0:
+        raise ValueError("Lambda_G: zero wierzcholkow z policzalna krzywizna sredni w tej siatce")
+
+    H_arr = np.array(H_values)
+    mean_H = float(np.mean(H_arr))
+    std_H = float(np.std(H_arr))
+    lambda_g = std_H / (std_H + abs(mean_H) + eps)
+
+    return CurvatureDispersionResult(
+        lambda_g=lambda_g, mean_H=mean_H, std_H=std_H, n_valid=len(H_values),
+    )
 
 
 # ---------------------------------------------------------------------

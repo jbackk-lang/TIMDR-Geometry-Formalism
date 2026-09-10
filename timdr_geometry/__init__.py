@@ -14,6 +14,8 @@ from .weingarten import (
     make_plane_mesh,
     make_sphere_mesh,
     make_cylinder_mesh,
+    CurvatureDispersionResult,
+    mean_curvature_dispersion,
 )
 from .chronocongruence import (
     make_congruence_mesh,
@@ -50,6 +52,8 @@ __all__ = [
     "make_plane_mesh",
     "make_sphere_mesh",
     "make_cylinder_mesh",
+    "CurvatureDispersionResult",
+    "mean_curvature_dispersion",
     "make_congruence_mesh",
     "flat_parallel_congruence",
     "cylindrical_congruence",
