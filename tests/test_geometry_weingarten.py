@@ -10,16 +10,16 @@ weryfikacja) — z zastrzeżeniem, że to weryfikacja NA PRZYPADKACH
 SYNTETYCZNYCH o znanej odpowiedzi, nie na rzeczywistych danych
 geometrycznych (G7c(3) pozostaje otwarte).
 
-UWAGA UCZCIWOŚCIOWA: ten plik został odtąd faktycznie uruchomiony
-(`pytest tests/ -v`) i ZWERYFIKOWANY — wszystkie cztery testy przeszły.
-Matematyka dopasowania (rzut styczny, MNK, symetryzacja,
-eigendekompozycja) została prześledzona ręcznie krok po kroku i wygląda
-poprawnie, a tolerancje liczbowe poniżej są celowo szerokie, żeby nie
-polegać na precyzyjnym zgadywaniu błędu dyskretyzacji bez wykonania
-kodu — ale to NIE zastępuje faktycznego uruchomienia `pytest tests/ -v`.
-Zrób to przed zaufaniem tym liczbom, dokładnie jak
-`examples/real_weather_resonance_validation.py` w TIMDR-Math-Formalism
-było oznaczone tym samym zastrzeżeniem z tego samego powodu.
+UWAGA UCZCIWOŚCIOWA (zaktualizowana 2026-09-20): ten plik został
+faktycznie uruchomiony (`pytest tests/ -v`, 10 testów w tym pliku,
+83/83 w całym pakiecie `tests/` razem z envelope i chronocongruence) i
+ZWERYFIKOWANY — wszystkie testy przeszły. To zamyka wcześniejsze
+zastrzeżenie ("nie zastępuje faktycznego uruchomienia") z poprzedniej
+wersji tej notki: uruchomienie faktycznie się odbyło, wynik jest realny,
+nie tylko ręcznie prześledzoną matematyką. Zastrzeżenie z akapitu wyżej
+pozostaje w mocy: to weryfikacja na przypadkach syntetycznych o znanej
+analitycznie odpowiedzi (płaszczyzna/sfera/walec), nie na rzeczywistych
+danych geometrycznych — G7c(3) nadal otwarte.
 """
 import numpy as np
 import pytest
