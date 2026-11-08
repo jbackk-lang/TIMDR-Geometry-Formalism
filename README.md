@@ -217,3 +217,7 @@ MIT — patrz [LICENSE](LICENSE).
 ## Powiązana propozycja topologiczna: trzy pętle i skręt Möbiusa
 
 [Formalizacja trójpętlowej dynamiki informacyjnej](https://github.com/jbackk-lang/GIA-TIMDR/blob/main/docs/theory/Three_Loop_Mobius_Information_Dynamics.md) — osobny model badawczy (hipoteza), zawierający analizę widma operatora J(Λ), warunki sklejenia Möbiusa, rozróżnienie torusa od wstęgi i testy falsyfikacyjne. **Nie jest częścią potwierdzonych aksjomatów G8–G9 ani walidacją istniejącego kodu.**
+
+### Testy numeryczne modelu trójpętlowego
+
+[Skrypt testowy bez dodatkowych zależności](experiments/three_loop_mobius_validation.py) sprawdza wartości własne J(Λ), brak tłumienia dla dodatniego Λ, granicę normy wariantu stabilizowanego, sklejenie brzegów wstęgi Möbiusa i równoważność obrazu proponowanej parametryzacji ze standardowym torusem. Uruchom: `python experiments/three_loop_mobius_validation.py`. Są to testy spójności matematycznej modelu, **nie walidacja empiryczna**.
