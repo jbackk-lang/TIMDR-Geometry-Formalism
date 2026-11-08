@@ -221,3 +221,9 @@ MIT — patrz [LICENSE](LICENSE).
 ### Testy numeryczne modelu trójpętlowego
 
 [Skrypt testowy bez dodatkowych zależności](experiments/three_loop_mobius_validation.py) sprawdza wartości własne J(Λ), brak tłumienia dla dodatniego Λ, granicę normy wariantu stabilizowanego, sklejenie brzegów wstęgi Möbiusa i równoważność obrazu proponowanej parametryzacji ze standardowym torusem. Uruchom: `python experiments/three_loop_mobius_validation.py`. Są to testy spójności matematycznej modelu, **nie walidacja empiryczna**.
+
+### Symulator holonomii trzech kanałów (M0–M3)
+
+[holonomy_simulator.py](experiments/holonomy_simulator.py) — symulator transportu amplitud po kolejnych obiegach, śledzący osobno orientację współrzędnej poprzecznej i stan trzech kanałów. Porównuje M0 (orientowalny), M1 (Möbius, H=I), M2 (Möbius, H=P) i M3 (Möbius, H=−I). Testuje także komutowanie holonomii z J(Λ) i kontrakcję wariantu stabilizowanego. Bez zewnętrznych zależności.
+
+Uruchomienie: `python experiments/holonomy_simulator.py`; testy: `python -m unittest discover -s experiments -p holonomy_simulator.py -v`. **To weryfikacja numeryczna konstrukcji matematycznej, nie empiryczna walidacja TIMDR.**
